@@ -6,17 +6,35 @@
 /*   By: gamoreir <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 21:17:56 by gamoreir          #+#    #+#             */
-/*   Updated: 2023/04/14 14:31:47 by gamoreir         ###   ########.fr       */
+/*   Updated: 2023/05/17 15:30:59 by gamoreir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-
-
-char	*get_line(int fd, char *buffer, char *file)
+static char	*ft_extractline(char *line)
 {
-	int	count;
+	size_t	size;
+	char	*file;
+
+	size = 0;
+	while (line[size] != '\n' && line[size])
+		size++;
+	if (!line[size])
+		return (0);
+	file = ft_substr(line, size + 1, ft_strlen(line) - size);
+	if (file[0] == '\0')
+	{
+		free(file);
+		file = 0;
+	}
+	line[size + 1] = '\0';
+	return (file);
+}
+
+static char	*ft_getline(int fd, char *buffer, char *file)
+{
+	int		count;
 	char	*temp;
 
 	count = 1;
@@ -33,7 +51,7 @@ char	*get_line(int fd, char *buffer, char *file)
 		temp = file;
 		file = ft_strjoin(temp, buffer);
 		free (temp);
-		if (ft_strchr(buffer, '\0'))
+		if (ft_strchr(buffer, '\n'))
 			break ;
 	}
 	return (file);
@@ -42,22 +60,42 @@ char	*get_line(int fd, char *buffer, char *file)
 char	*get_next_line(int fd)
 {
 	static char	*file;
-	char	*line;
-	char	*buffer;
+	char		*line;
+	char		*buffer;
 
 	if (BUFFER_SIZE <= 0 || fd < 0)
-		return (NULL);
-	buffer = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+		return (0);
+	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
 		return (0);
-	line = get_line(fd, buffer, file);
-	free(buffer)
+	line = ft_getline(fd, buffer, file);
+	free(buffer);
 	if (!line)
 	{
 		free (file);
 		file = 0;
 		return (file);
 	}
-	file = extractfile(line);
+	file = ft_extractline(line);
 	return (line);
 }
+/*int	main(void)
+{
+	char	*line;
+	int	i;
+	int	fd1;
+
+	fd1 = open("test.txt", O_RDONLY);
+	i = 1;
+	while (1)
+	{
+		line = get_next_line(fd1);
+		printf("%s\n", line);
+		if (!line)
+			break ;
+		free (line);
+		i++;
+	}
+	close(fd1);
+	return (0);
+}*/
